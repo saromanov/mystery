@@ -8,4 +8,6 @@ type Backend interface {
 
 // MasterPassBackend defines backend for master pass
 type MasterPassBackend interface {
+	Get(pass string) ([]byte, error)
+	Put(pass string) error
 }
