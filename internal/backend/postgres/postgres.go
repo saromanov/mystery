@@ -6,12 +6,19 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/saromanov/mystery/config"
+	"github.com/saromanov/mystery/crypto"
 	"github.com/saromanov/mystery/internal/backend"
 )
 
 // Postgres defines backend for postgres
 type Postgres struct {
 	db *gorm.DB
+}
+
+type Model struct {
+	ID    uint64
+	Key   string
+	Value []byte
 }
 
 // New provides initialization of postgres for store master pass
@@ -27,11 +34,16 @@ func New(c *config.MasterPassBackend) (backend.Backend, error) {
 }
 
 // Get defines getting a secret from backend
-func (m *Postgres) Get(key string) ([]byte, error) {
-	return nil, nil
+func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
+	return backend.Secret{}, nil
 }
 
 // Put defines putting a secret to backend
-func (m *Postgres) Put(key string) error {
+func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
+	encryptedValue := crypto.EncryptAES(masterKey, secret.Value)
+	m.db.Insert(&Model{
+		Key:   secret.Key,
+		Value: encryptedValue,
+	})
 	return nil
 }
