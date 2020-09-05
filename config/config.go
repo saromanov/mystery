@@ -2,10 +2,13 @@ package config
 
 // Config defines configuration for mystery
 type Config struct {
-	MasterPassBackend MasterPassBackend
+	Backend Backend
+	// Environment variable for master pass
+	MasterPassEnv string `yaml:"masterPassEnv"`
 }
 
-type MasterPassBackend struct {
+// Backend defines way for store secrets
+type Backend struct {
 	Type     string `yaml:"type"`
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
