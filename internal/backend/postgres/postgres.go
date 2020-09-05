@@ -16,9 +16,10 @@ type Postgres struct {
 }
 
 type Model struct {
-	ID    uint64
-	Key   string
-	Value []byte
+	ID     uint64
+	Key    string
+	Value  []byte
+	UserID string
 }
 
 // New provides initialization of postgres for store master pass
