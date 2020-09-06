@@ -2,12 +2,13 @@ package postgres
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/saromanov/mystery/config"
-	"github.com/saromanov/mystery/crypto"
 	"github.com/saromanov/mystery/internal/backend"
+	"github.com/saromanov/mystery/internal/crypto"
 )
 
 // Postgres defines backend for postgres
@@ -15,20 +16,24 @@ type Postgres struct {
 	db *gorm.DB
 }
 
+// Model defines structure for store in Postgres
 type Model struct {
-	ID     uint64
-	Key    string
-	Value  []byte
-	UserID string
+	ID        uint64    `gorm:"primaryKey;AUTO_INCREMENT;NOT NULL"`
+	Key       string    `gorm:"NOT NULL"`
+	Value     []byte    `gorm:"NOT NULL"`
+	UserID    string    `gorm:"index"`
+	CreatedAt time.Time `gorm:"NOT NULL"`
+	UpdatedAt time.Time
 }
 
 // New provides initialization of postgres for store master pass
-func New(c *config.MasterPassBackend) (backend.Backend, error) {
-	url := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", c.Host, c.Port, c.User, c.DB, c.Password)
+func New(c *config.Config) (backend.Backend, error) {
+	url := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", c.Backend.Host, c.Backend.Port, c.Backend.User, c.Backend.DB, c.Backend.Password)
 	db, err := gorm.Open("postgres", url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to db: %v", err)
 	}
+	db.AutoMigrate(&Model{})
 	return &Postgres{
 		db: db,
 	}, nil
@@ -41,9 +46,12 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 
 // Put defines putting a secret to backend
 func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
-	encryptedValue := crypto.EncryptAES(masterKey, secret.Value)
-	m.db.Insert(&Model{
-		Key:   secret.Key,
+	encryptedValue, err := crypto.EncryptAES(masterKey, secret.Value)
+	if err != nil {
+		return fmt.Errorf("put: unable to encrypt data: %v", err)
+	}
+	m.db.Create(&Model{
+		Key:   string(secret.Key),
 		Value: encryptedValue,
 	})
 	return nil
