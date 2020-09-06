@@ -35,7 +35,7 @@ func put(c *cli.Context) error {
 
 // loadConfig provides loading of configuration
 func loadConfig(path string) (*config.Config, error) {
-	return nil, nil
+	return config.Load(path)
 }
 
 func main() {
