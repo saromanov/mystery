@@ -30,6 +30,8 @@ func put(c *cli.Context) error {
 	}); err != nil {
 		logrus.WithError(err).Fatalf("unable to store data")
 	}
+
+	logrus.Infof("data was stored")
 	return nil
 }
 

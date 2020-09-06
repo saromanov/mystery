@@ -16,8 +16,8 @@ type Postgres struct {
 	db *gorm.DB
 }
 
-// Model defines structure for store in Postgres
-type Model struct {
+// Mystery defines structure for store in Postgres
+type Mystery struct {
 	ID        uint64    `gorm:"primaryKey;AUTO_INCREMENT;NOT NULL"`
 	Key       string    `gorm:"NOT NULL"`
 	Value     []byte    `gorm:"NOT NULL"`
@@ -33,7 +33,7 @@ func New(c *config.Config) (backend.Backend, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to db: %v", err)
 	}
-	db.AutoMigrate(&Model{})
+	db.AutoMigrate(&Mystery{})
 	return &Postgres{
 		db: db,
 	}, nil
@@ -50,7 +50,7 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 	if err != nil {
 		return fmt.Errorf("put: unable to encrypt data: %v", err)
 	}
-	m.db.Create(&Model{
+	m.db.Create(&Mystery{
 		Key:   string(secret.Key),
 		Value: encryptedValue,
 	})
