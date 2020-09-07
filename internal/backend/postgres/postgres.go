@@ -47,7 +47,14 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 	}); err != nil {
 		return backend.Secret{}, fmt.Errorf("unable to get secret: %v", err)
 	}
-	return backend.Secret{}, nil
+	decryped, err := crypto.DecryptAES(masterKey, r.Value)
+	if err != nil {
+		return backend.Secret{}, fmt.Errorf("get: unable to decrypt value: %v", err)
+	}
+	return backend.Secret{
+		Key:   key,
+		Value: decryped,
+	}, nil
 }
 
 // Put defines putting a secret to backend
