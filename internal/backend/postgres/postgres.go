@@ -47,13 +47,13 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 	}).Error; err != nil {
 		return backend.Secret{}, fmt.Errorf("unable to get secret: %v", err)
 	}
-	decryped, err := crypto.DecryptAES(masterKey, r.Value)
+	decrypted, err := crypto.DecryptAES(masterKey, r.Value)
 	if err != nil {
 		return backend.Secret{}, fmt.Errorf("get: unable to decrypt value: %v", err)
 	}
 	return backend.Secret{
 		Key:   key,
-		Value: decryped,
+		Value: decrypted,
 	}, nil
 }
 
@@ -64,8 +64,9 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 		return fmt.Errorf("put: unable to encrypt data: %v", err)
 	}
 	m.db.Create(&Mystery{
-		Key:   string(secret.Key),
-		Value: encryptedValue,
+		Key:       string(secret.Key),
+		Value:     encryptedValue,
+		CreatedAt: time.Now().UTC(),
 	})
 	return nil
 }

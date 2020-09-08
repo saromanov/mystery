@@ -1,5 +1,7 @@
 package backend
 
+import "time"
+
 // Backend defines way for store secrets
 type Backend interface {
 	Get(masterKey, key []byte) (Secret, error)
@@ -14,6 +16,7 @@ type MasterPassBackend interface {
 
 // Secret defines struct for store secrets
 type Secret struct {
-	Key   []byte
-	Value []byte
+	Key          []byte
+	Value        []byte
+	ExpiredAfter *time.Duration
 }
