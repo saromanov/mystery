@@ -44,7 +44,7 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 	var r Mystery
 	if err := m.db.Find(&r, &Mystery{
 		Key: string(key),
-	}); err != nil {
+	}).Error; err != nil {
 		return backend.Secret{}, fmt.Errorf("unable to get secret: %v", err)
 	}
 	decryped, err := crypto.DecryptAES(masterKey, r.Value)
