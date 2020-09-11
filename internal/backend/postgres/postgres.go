@@ -19,8 +19,8 @@ type Postgres struct {
 // Mystery defines structure for store in Postgres
 type Mystery struct {
 	ID             uint64    `gorm:"primaryKey;AUTO_INCREMENT;NOT NULL"`
-	Key            string    `gorm:"NOT NULL"`
-	Value          []byte    `gorm:"NOT NULL"`
+	Namespace      string    `gorm:"NOT NULL"`
+	Data           []byte    `gorm:"NOT NULL"`
 	UserID         string    `gorm:"index"`
 	CreatedAt      time.Time `gorm:"NOT NULL"`
 	CurrentVersion uint64    `gorm:"NOT NULL;default:0"`
@@ -43,18 +43,18 @@ func New(c *config.Config) (backend.Backend, error) {
 }
 
 // Get defines getting a secret from backend
-func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
-	r, err := m.get(key)
+func (m *Postgres) Get(masterKey, namespace []byte) (backend.Secret, error) {
+	r, err := m.get(namespace)
 	if err != nil {
 		return backend.Secret{}, fmt.Errorf("unable to get secret: %v", err)
 	}
-	decrypted, err := crypto.DecryptAES(masterKey, r.Value)
+	decrypted, err := crypto.DecryptAES(masterKey, r.Data)
 	if err != nil {
 		return backend.Secret{}, fmt.Errorf("get: unable to decrypt value: %v", err)
 	}
 	return backend.Secret{
-		Key:   key,
-		Value: decrypted,
+		Namespace: namespace,
+		Data:      decrypted,
 	}, nil
 }
 
@@ -66,7 +66,7 @@ func (m *Postgres) get(key []byte) (Mystery, error) {
 		return r, err
 	}
 	if err := m.db.Find(&r, &Mystery{
-		Key:            string(key),
+		Namespace:      string(key),
 		CurrentVersion: count,
 	}).Error; err != nil {
 		return r, fmt.Errorf("unable to get secret: %v", err)
@@ -101,13 +101,13 @@ func checkExpired(r Mystery) bool {
 
 // Put defines putting a secret to backend
 func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
-	encryptedValue, err := crypto.EncryptAES(masterKey, secret.Value)
+	encryptedValue, err := crypto.EncryptAES(masterKey, secret.Data)
 	if err != nil {
 		return fmt.Errorf("put: unable to encrypt data: %v", err)
 	}
 	m.db.Create(&Mystery{
-		Key:            string(secret.Key),
-		Value:          encryptedValue,
+		Namespace:      string(secret.Namespace),
+		Data:           encryptedValue,
 		CreatedAt:      time.Now().UTC(),
 		ExpiredAfter:   secret.ExpiredAfter,
 		CurrentVersion: 1,
@@ -117,7 +117,7 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 }
 
 func (m *Postgres) Update(masterKey []byte, secret backend.Secret) error {
-	data, err := m.get(secret.Key)
+	data, err := m.get(secret.Data)
 	if err != nil {
 		return err
 	}

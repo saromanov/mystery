@@ -1,6 +1,8 @@
 package mystery
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"fmt"
 
@@ -44,11 +46,26 @@ func Put(p PutRequest) error {
 	if err := p.validate(); err != nil {
 		return fmt.Errorf("put: unable to validate data: %v", err)
 	}
+
+	value, err := encodeValue(p.Data)
+	if err != nil {
+		return fmt.Errorf("unable to encode value: %v", err)
+	}
 	if err := p.Backend.Put([]byte(p.MasterPass), backend.Secret{
-		Key:   []byte(p.Key),
-		Value: []byte(p.Value),
+		Namespace: []byte(p.Namespace),
+		Data:      value,
 	}); err != nil {
 		return fmt.Errorf("put: unable to store data: %v", err)
 	}
 	return nil
+}
+
+func encodeValue(data map[string]string) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

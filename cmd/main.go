@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/saromanov/mystery/config"
 	"github.com/saromanov/mystery/internal/backend/postgres"
@@ -17,9 +18,12 @@ func put(c *cli.Context) error {
 		logrus.WithError(err).Fatalf("unable to load config")
 	}
 	key := c.Args().Get(0)
-	value := c.Args().Get(1)
-	fmt.Println("ARG2", c.Args().Get(2))
-	fmt.Println("ARG2", c.Args().Get(3))
+	data := map[string]string{}
+	for i := 1; i < c.Args().Len(); i++ {
+		value := strings.Split(c.Args().Get(i), "=")
+		data[value[0]] = value[1]
+	}
+	fmt.Println(data)
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {
@@ -27,8 +31,8 @@ func put(c *cli.Context) error {
 	}
 	if err := mystery.Put(mystery.PutRequest{
 		MasterPass: masterPass,
-		Key:        key,
-		Value:      value,
+		Namespace:  key,
+		Data:       data,
 		Backend:    pg,
 	}); err != nil {
 		logrus.WithError(err).Fatalf("unable to store data")
@@ -51,7 +55,7 @@ func get(c *cli.Context) error {
 	}
 	value, err := mystery.Get(mystery.GetRequest{
 		MasterPass: masterPass,
-		Key:        key,
+		Namespace:  key,
 		Backend:    pg,
 	})
 	if err != nil {
