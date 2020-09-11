@@ -18,13 +18,15 @@ type Postgres struct {
 
 // Mystery defines structure for store in Postgres
 type Mystery struct {
-	ID           uint64    `gorm:"primaryKey;AUTO_INCREMENT;NOT NULL"`
-	Key          string    `gorm:"NOT NULL"`
-	Value        []byte    `gorm:"NOT NULL"`
-	UserID       string    `gorm:"index"`
-	CreatedAt    time.Time `gorm:"NOT NULL"`
-	ExpiredAfter *time.Duration
-	UpdatedAt    time.Time
+	ID             uint64    `gorm:"primaryKey;AUTO_INCREMENT;NOT NULL"`
+	Key            string    `gorm:"NOT NULL"`
+	Value          []byte    `gorm:"NOT NULL"`
+	UserID         string    `gorm:"index"`
+	CreatedAt      time.Time `gorm:"NOT NULL"`
+	CurrentVersion uint      `gorm:"NOT NULL;default:0"`
+	MaxVersion     uint      `gorm:"NOT NULL;default:0"`
+	ExpiredAfter   *time.Duration
+	UpdatedAt      time.Time
 }
 
 // New provides initialization of postgres for store master pass
@@ -42,14 +44,9 @@ func New(c *config.Config) (backend.Backend, error) {
 
 // Get defines getting a secret from backend
 func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
-	var r Mystery
-	if err := m.db.Find(&r, &Mystery{
-		Key: string(key),
-	}).Error; err != nil {
+	r, err := m.get(masterKey, key)
+	if err != nil {
 		return backend.Secret{}, fmt.Errorf("unable to get secret: %v", err)
-	}
-	if expired := checkExpired(r); expired {
-		return backend.Secret{}, fmt.Errorf("data with key %s has expired", string(key))
 	}
 	decrypted, err := crypto.DecryptAES(masterKey, r.Value)
 	if err != nil {
@@ -59,6 +56,19 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 		Key:   key,
 		Value: decrypted,
 	}, nil
+}
+
+func (m *Postgres) get(masterKey, key []byte) (Mystery, error) {
+	var r Mystery
+	if err := m.db.Find(&r, &Mystery{
+		Key: string(key),
+	}).Error; err != nil {
+		return r, fmt.Errorf("unable to get secret: %v", err)
+	}
+	if expired := checkExpired(r); expired {
+		return r, fmt.Errorf("data with key %s has expired", string(key))
+	}
+	return r, nil
 }
 
 // checkExpired provides checking is value has expired
@@ -87,4 +97,13 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 		ExpiredAfter: secret.ExpiredAfter,
 	})
 	return nil
+}
+
+func (m *Postgres) Update(masterKey []byte, secret backend.Secret) error {
+	data, err := m.get(masterKey, secret.Key)
+	if err != nil {
+		return err
+	}
+	data.CurrentVersion++
+	return m.db.Update(data)
 }
