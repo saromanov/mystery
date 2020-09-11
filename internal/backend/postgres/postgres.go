@@ -23,8 +23,8 @@ type Mystery struct {
 	Value          []byte    `gorm:"NOT NULL"`
 	UserID         string    `gorm:"index"`
 	CreatedAt      time.Time `gorm:"NOT NULL"`
-	CurrentVersion uint      `gorm:"NOT NULL;default:0"`
-	MaxVersion     uint      `gorm:"NOT NULL;default:0"`
+	CurrentVersion uint64    `gorm:"NOT NULL;default:0"`
+	MaxVersion     uint64    `gorm:"NOT NULL;default:0"`
 	ExpiredAfter   *time.Duration
 	UpdatedAt      time.Time
 }
@@ -60,8 +60,13 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 
 func (m *Postgres) get(masterKey, key []byte) (Mystery, error) {
 	var r Mystery
+	count, err := m.countByKey(string(key))
+	if err != nil {
+		return r, err
+	}
 	if err := m.db.Find(&r, &Mystery{
-		Key: string(key),
+		Key:            string(key),
+		CurrentVersion: count,
 	}).Error; err != nil {
 		return r, fmt.Errorf("unable to get secret: %v", err)
 	}
@@ -69,6 +74,15 @@ func (m *Postgres) get(masterKey, key []byte) (Mystery, error) {
 		return r, fmt.Errorf("data with key %s has expired", string(key))
 	}
 	return r, nil
+}
+
+// countByKey returns number of secrets by the key
+func (m *Postgres) countByKey(key string) (uint64, error) {
+	var count uint64
+	if err := m.db.Model(&Mystery{}).Where("key = ?", key).Count(&count).Error; err != nil {
+		return 0, fmt.Errorf("unable to get count of keys: %v", err)
+	}
+	return count, nil
 }
 
 // checkExpired provides checking is value has expired
@@ -91,10 +105,12 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 		return fmt.Errorf("put: unable to encrypt data: %v", err)
 	}
 	m.db.Create(&Mystery{
-		Key:          string(secret.Key),
-		Value:        encryptedValue,
-		CreatedAt:    time.Now().UTC(),
-		ExpiredAfter: secret.ExpiredAfter,
+		Key:            string(secret.Key),
+		Value:          encryptedValue,
+		CreatedAt:      time.Now().UTC(),
+		ExpiredAfter:   secret.ExpiredAfter,
+		CurrentVersion: 1,
+		MaxVersion:     1,
 	})
 	return nil
 }
@@ -105,5 +121,5 @@ func (m *Postgres) Update(masterKey []byte, secret backend.Secret) error {
 		return err
 	}
 	data.CurrentVersion++
-	return m.db.Update(data)
+	return m.db.Update(data).Error
 }
