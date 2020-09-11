@@ -18,12 +18,13 @@ type Postgres struct {
 
 // Mystery defines structure for store in Postgres
 type Mystery struct {
-	ID        uint64    `gorm:"primaryKey;AUTO_INCREMENT;NOT NULL"`
-	Key       string    `gorm:"NOT NULL"`
-	Value     []byte    `gorm:"NOT NULL"`
-	UserID    string    `gorm:"index"`
-	CreatedAt time.Time `gorm:"NOT NULL"`
-	UpdatedAt time.Time
+	ID           uint64    `gorm:"primaryKey;AUTO_INCREMENT;NOT NULL"`
+	Key          string    `gorm:"NOT NULL"`
+	Value        []byte    `gorm:"NOT NULL"`
+	UserID       string    `gorm:"index"`
+	CreatedAt    time.Time `gorm:"NOT NULL"`
+	ExpiredAfter *time.Duration
+	UpdatedAt    time.Time
 }
 
 // New provides initialization of postgres for store master pass
@@ -47,6 +48,9 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 	}).Error; err != nil {
 		return backend.Secret{}, fmt.Errorf("unable to get secret: %v", err)
 	}
+	if expired := checkExpired(r); expired {
+		return backend.Secret{}, fmt.Errorf("data with key %s has expired", string(key))
+	}
 	decrypted, err := crypto.DecryptAES(masterKey, r.Value)
 	if err != nil {
 		return backend.Secret{}, fmt.Errorf("get: unable to decrypt value: %v", err)
@@ -57,6 +61,19 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 	}, nil
 }
 
+// checkExpired provides checking is value has expired
+func checkExpired(r Mystery) bool {
+	if r.ExpiredAfter == nil {
+		return false
+	}
+	now := time.Now().UTC()
+	if now.Sub(r.CreatedAt) > *r.ExpiredAfter {
+		return true
+	}
+	return false
+
+}
+
 // Put defines putting a secret to backend
 func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 	encryptedValue, err := crypto.EncryptAES(masterKey, secret.Value)
@@ -64,9 +81,10 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 		return fmt.Errorf("put: unable to encrypt data: %v", err)
 	}
 	m.db.Create(&Mystery{
-		Key:       string(secret.Key),
-		Value:     encryptedValue,
-		CreatedAt: time.Now().UTC(),
+		Key:          string(secret.Key),
+		Value:        encryptedValue,
+		CreatedAt:    time.Now().UTC(),
+		ExpiredAfter: secret.ExpiredAfter,
 	})
 	return nil
 }
