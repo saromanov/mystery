@@ -16,7 +16,7 @@ type MasterPassBackend interface {
 
 // Secret defines struct for store secrets
 type Secret struct {
-	Key          []byte
-	Value        []byte
+	Namespace    []byte
+	Data         []byte
 	ExpiredAfter *time.Duration
 }

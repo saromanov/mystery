@@ -9,7 +9,7 @@ import (
 
 var (
 	errNoMasterPass = errors.New("master pass is not defined")
-	errNoKey        = errors.New("key is not defined")
+	errNoNamespace  = errors.New("namespace is not defined")
 	errNoValue      = errors.New("value is not defined")
 	errNoBackend    = errors.New("backend is not defined")
 )
@@ -17,8 +17,8 @@ var (
 // PutRequest provides struct for sending to Put
 type PutRequest struct {
 	MasterPass string
-	Key        string
-	Value      string
+	Namespace  string
+	Data       map[string]string
 	Backend    backend.Backend
 }
 
@@ -27,10 +27,10 @@ func (p PutRequest) validate() error {
 	if p.MasterPass == "" {
 		return errNoMasterPass
 	}
-	if p.Key == "" {
-		return errNoKey
+	if p.Namespace == "" {
+		return errNoNamespace
 	}
-	if p.Value == "" {
+	if len(p.Data) == 0 {
 		return errNoValue
 	}
 	if p.Backend == nil {

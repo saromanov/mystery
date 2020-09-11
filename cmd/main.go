@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/saromanov/mystery/config"
@@ -17,6 +18,8 @@ func put(c *cli.Context) error {
 	}
 	key := c.Args().Get(0)
 	value := c.Args().Get(1)
+	fmt.Println("ARG2", c.Args().Get(2))
+	fmt.Println("ARG2", c.Args().Get(3))
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {

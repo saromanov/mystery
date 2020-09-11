@@ -44,7 +44,7 @@ func New(c *config.Config) (backend.Backend, error) {
 
 // Get defines getting a secret from backend
 func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
-	r, err := m.get(masterKey, key)
+	r, err := m.get(key)
 	if err != nil {
 		return backend.Secret{}, fmt.Errorf("unable to get secret: %v", err)
 	}
@@ -58,7 +58,8 @@ func (m *Postgres) Get(masterKey, key []byte) (backend.Secret, error) {
 	}, nil
 }
 
-func (m *Postgres) get(masterKey, key []byte) (Mystery, error) {
+// get data by the key
+func (m *Postgres) get(key []byte) (Mystery, error) {
 	var r Mystery
 	count, err := m.countByKey(string(key))
 	if err != nil {
@@ -116,7 +117,7 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 }
 
 func (m *Postgres) Update(masterKey []byte, secret backend.Secret) error {
-	data, err := m.get(masterKey, secret.Key)
+	data, err := m.get(secret.Key)
 	if err != nil {
 		return err
 	}
