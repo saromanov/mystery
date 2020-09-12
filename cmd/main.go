@@ -9,25 +9,37 @@ import (
 	"github.com/saromanov/mystery/internal/backend/postgres"
 	"github.com/saromanov/mystery/internal/mystery"
 	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
 func put(c *cli.Context) error {
+	if err := putInner(c); err != nil {
+		log.WithError(err).Fatalf("unable to execute put command")
+	}
+	log.Infof("data was stored")
+	return nil
+}
+
+func putInner(c *cli.Context) error {
 	conf, err := loadConfig("config.yml")
 	if err != nil {
-		logrus.WithError(err).Fatalf("unable to load config")
+		return fmt.Errorf("unable to load config: %v", err)
 	}
 	key := c.Args().Get(0)
 	data := map[string]string{}
 	for i := 1; i < c.Args().Len(); i++ {
 		value := strings.Split(c.Args().Get(i), "=")
+		if len(value) <= 1 {
+			return fmt.Errorf("data should be in format key=value")
+		}
 		data[value[0]] = value[1]
 	}
 	fmt.Println(data)
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {
-		logrus.WithError(err).Fatalf("unable to init backend")
+		return fmt.Errorf("unable to init backend: %v", err)
 	}
 	if err := mystery.Put(mystery.PutRequest{
 		MasterPass: masterPass,
@@ -35,10 +47,8 @@ func put(c *cli.Context) error {
 		Data:       data,
 		Backend:    pg,
 	}); err != nil {
-		logrus.WithError(err).Fatalf("unable to store data")
+		return fmt.Errorf("unable to store data: %v", err)
 	}
-
-	logrus.Infof("data was stored")
 	return nil
 }
 
