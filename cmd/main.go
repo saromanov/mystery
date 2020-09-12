@@ -72,7 +72,7 @@ func get(c *cli.Context) error {
 		logrus.WithError(err).Fatalf("unable to get data")
 	}
 
-	logrus.Infof("%s", string(value))
+	fmt.Println(value)
 	return nil
 }
 

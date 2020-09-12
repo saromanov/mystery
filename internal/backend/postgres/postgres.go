@@ -80,7 +80,7 @@ func (m *Postgres) get(key []byte) (Mystery, error) {
 // countByKey returns number of secrets by the key
 func (m *Postgres) countByKey(key string) (uint64, error) {
 	var count uint64
-	if err := m.db.Model(&Mystery{}).Where("key = ?", key).Count(&count).Error; err != nil {
+	if err := m.db.Model(&Mystery{}).Where("namespace = ?", key).Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("unable to get count of keys: %v", err)
 	}
 	return count, nil
