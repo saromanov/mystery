@@ -27,7 +27,7 @@ func putInner(c *cli.Context) error {
 		return fmt.Errorf("unable to load config: %v", err)
 	}
 	key := c.Args().Get(0)
-	data := map[string]string{}
+	data := mystery.Data{}
 	for i := 1; i < c.Args().Len(); i++ {
 		value := strings.Split(c.Args().Get(i), "=")
 		if len(value) <= 1 {
@@ -35,7 +35,6 @@ func putInner(c *cli.Context) error {
 		}
 		data[value[0]] = value[1]
 	}
-	fmt.Println(data)
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {

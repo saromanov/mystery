@@ -1,8 +1,6 @@
 package mystery
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 
 	"github.com/saromanov/mystery/internal/backend"
@@ -30,7 +28,7 @@ func (p GetRequest) validate() error {
 }
 
 // Get provides getting value by the key
-func Get(p GetRequest) (map[string]string, error) {
+func Get(p GetRequest) (Data, error) {
 	if err := p.validate(); err != nil {
 		return nil, fmt.Errorf("get: unable to validate data: %v", err)
 	}
@@ -38,15 +36,5 @@ func Get(p GetRequest) (map[string]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get: unable to get data: %v", err)
 	}
-	return decodeValue(rsp.Data)
-}
-
-func decodeValue(data []byte) (map[string]string, error) {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	var out map[string]string
-	if err := dec.Decode(&out); err != nil {
-		return out, fmt.Errorf("unable to decode value: %v", err)
-	}
-	return out, nil
+	return Decode(rsp.Data)
 }
