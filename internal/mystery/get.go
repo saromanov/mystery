@@ -37,5 +37,12 @@ func Get(p GetRequest) (Data, error) {
 	if err != nil {
 		return "", fmt.Errorf("get: unable to get data: %v", err)
 	}
-	return Decode(rsp.Data)
+	data := rsp.Data
+	if rsp.Compressed {
+		data, err = decompress(rsp.Data)
+		if err != nil {
+			return "", fmt.Errorf("unable to decompress: %v", err)
+		}
+	}
+	return Decode(data)
 }

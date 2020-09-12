@@ -54,8 +54,9 @@ func (m *Postgres) Get(masterKey, namespace []byte) (backend.Secret, error) {
 		return backend.Secret{}, fmt.Errorf("get: unable to decrypt value: %v", err)
 	}
 	return backend.Secret{
-		Namespace: namespace,
-		Data:      decrypted,
+		Namespace:  namespace,
+		Data:       decrypted,
+		Compressed: r.Compressed,
 	}, nil
 }
 
