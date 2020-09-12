@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/saromanov/mystery/config"
 	"github.com/saromanov/mystery/internal/backend/postgres"
@@ -27,13 +26,9 @@ func putInner(c *cli.Context) error {
 		return fmt.Errorf("unable to load config: %v", err)
 	}
 	key := c.Args().Get(0)
-	data := mystery.Data{}
+	var data mystery.Data
 	for i := 1; i < c.Args().Len(); i++ {
-		value := strings.Split(c.Args().Get(i), "=")
-		if len(value) <= 1 {
-			return fmt.Errorf("data should be in format key=value")
-		}
-		data[value[0]] = value[1]
+		data += mystery.Data(c.Args().Get(i) + ";")
 	}
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)

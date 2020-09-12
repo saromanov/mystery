@@ -25,6 +25,7 @@ type Mystery struct {
 	CreatedAt      time.Time `gorm:"NOT NULL"`
 	CurrentVersion uint64    `gorm:"NOT NULL;default:0"`
 	MaxVersion     uint64    `gorm:"NOT NULL;default:0"`
+	Compressed     bool
 	ExpiredAfter   *time.Duration
 	UpdatedAt      time.Time
 }
@@ -112,6 +113,7 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 		ExpiredAfter:   secret.ExpiredAfter,
 		CurrentVersion: 1,
 		MaxVersion:     1,
+		Compressed:     secret.Compressed,
 	})
 	return nil
 }

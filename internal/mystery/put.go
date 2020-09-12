@@ -45,13 +45,22 @@ func Put(p PutRequest) error {
 		return fmt.Errorf("put: unable to validate data: %v", err)
 	}
 
-	value, err := Encode(p.Data)
+	value, err := p.Data.encode()
 	if err != nil {
 		return fmt.Errorf("unable to encode value: %v", err)
 	}
+	reducedValue, err := compress(value)
+	if err != nil {
+		return fmt.Errorf("unable to compress data: %v", err)
+	}
+	compressed := len(reducedValue) < len(value)
+	if compressed {
+		value = reducedValue
+	}
 	if err := p.Backend.Put([]byte(p.MasterPass), backend.Secret{
-		Namespace: []byte(p.Namespace),
-		Data:      value,
+		Namespace:  []byte(p.Namespace),
+		Data:       value,
+		Compressed: compressed,
 	}); err != nil {
 		return fmt.Errorf("put: unable to store data: %v", err)
 	}

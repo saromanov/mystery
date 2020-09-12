@@ -19,4 +19,5 @@ type Secret struct {
 	Namespace    []byte
 	Data         []byte
 	ExpiredAfter *time.Duration
+	Compressed   bool
 }
