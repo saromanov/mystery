@@ -11,7 +11,7 @@ type UpdateRequest struct {
 	MasterPass string
 	Namespace  string
 	Backend    backend.Backend
-	Version    int64
+	Data       Data
 }
 
 // validate provides validation of data
@@ -31,7 +31,7 @@ func (p UpdateRequest) validate() error {
 // Update provides updating value by the key
 func Update(p UpdateRequest) error {
 	if err := p.validate(); err != nil {
-		return "", fmt.Errorf("update: unable to validate data: %v", err)
+		return fmt.Errorf("update: unable to validate data: %v", err)
 	}
 	value, err := p.Data.encode()
 	if err != nil {
@@ -45,16 +45,13 @@ func Update(p UpdateRequest) error {
 	if compressed {
 		value = reducedValue
 	}
-	err := p.Backend.Update([]byte(p.MasterPass), []byte(p.Namespace))
+	err = p.Backend.Update([]byte(p.MasterPass), backend.Secret{
+		Namespace:  []byte(p.Namespace),
+		Compressed: compressed,
+		Data:       value,
+	})
 	if err != nil {
-		return "", fmt.Errorf("update: unable to get data: %v", err)
+		return fmt.Errorf("update: unable to get data: %v", err)
 	}
-	data := rsp.Data
-	if rsp.Compressed {
-		data, err = decompress(rsp.Data)
-		if err != nil {
-			return "", fmt.Errorf("unable to decompress: %v", err)
-		}
-	}
-	return Decode(data)
+	return nil
 }

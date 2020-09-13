@@ -119,11 +119,13 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 	return nil
 }
 
+// Update provides updating of data
 func (m *Postgres) Update(masterKey []byte, secret backend.Secret) error {
-	data, err := m.get(secret.Data)
+	data, err := m.get(secret.Namespace)
 	if err != nil {
 		return err
 	}
 	data.CurrentVersion++
+	data.Data = secret.Data
 	return m.db.Update(data).Error
 }

@@ -86,13 +86,12 @@ func update(c *cli.Context) error {
 	for i := 1; i < c.Args().Len(); i++ {
 		data += mystery.Data(c.Args().Get(i) + ";")
 	}
-	err = mystery.Update(mystery.PutRequest{
+	if err = mystery.Update(mystery.UpdateRequest{
 		MasterPass: masterPass,
 		Namespace:  key,
 		Data:       data,
 		Backend:    pg,
-	})
-	if err != nil {
+	}); err != nil {
 		logrus.WithError(err).Fatalf("unable to update data")
 	}
 	return nil
