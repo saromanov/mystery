@@ -70,6 +70,34 @@ func get(c *cli.Context) error {
 	return nil
 }
 
+// update provides updating of the value
+func update(c *cli.Context) error {
+	conf, err := loadConfig("config.yml")
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to load config")
+	}
+	key := c.Args().Get(0)
+	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
+	pg, err := postgres.New(conf)
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to init backend")
+	}
+	var data mystery.Data
+	for i := 1; i < c.Args().Len(); i++ {
+		data += mystery.Data(c.Args().Get(i) + ";")
+	}
+	err = mystery.Update(mystery.PutRequest{
+		MasterPass: masterPass,
+		Namespace:  key,
+		Data:       data,
+		Backend:    pg,
+	})
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to update data")
+	}
+
+}
+
 // loadConfig provides loading of configuration
 func loadConfig(path string) (*config.Config, error) {
 	return config.Load(path)
@@ -89,6 +117,11 @@ func main() {
 			{
 				Name:   "get",
 				Usage:  "getting value by the key",
+				Action: get,
+			},
+			{
+				Name:   "update",
+				Usage:  "updating of the value by the key",
 				Action: get,
 			},
 		},
