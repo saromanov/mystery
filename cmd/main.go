@@ -95,7 +95,7 @@ func update(c *cli.Context) error {
 	if err != nil {
 		logrus.WithError(err).Fatalf("unable to update data")
 	}
-
+	return nil
 }
 
 // loadConfig provides loading of configuration

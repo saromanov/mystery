@@ -6,6 +6,7 @@ import "time"
 type Backend interface {
 	Get(masterKey, key []byte) (Secret, error)
 	Put(masterKey []byte, secret Secret) error
+	Update(MasterKey []byte, secret Secret) error
 }
 
 // MasterPassBackend defines backend for master pass
