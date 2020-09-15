@@ -127,5 +127,11 @@ func (m *Postgres) Update(masterKey []byte, secret backend.Secret) error {
 	}
 	data.CurrentVersion++
 	data.Data = secret.Data
-	return m.db.Update(data).Error
+	data.UpdatedAt = time.Now().UTC()
+	fmt.Println("UPDATE: ", data)
+	m.db.Model(Mystery{}).Update(&Mystery{
+		Data:       secret.Data,
+		Compressed: secret.Compressed,
+		MaxVersion: data.MaxVersion + 1,
+	}).Error
 }

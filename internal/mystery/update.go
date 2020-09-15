@@ -45,6 +45,7 @@ func Update(p UpdateRequest) error {
 	if compressed {
 		value = reducedValue
 	}
+	fmt.Println("DATA: ", value)
 	err = p.Backend.Update([]byte(p.MasterPass), backend.Secret{
 		Namespace:  []byte(p.Namespace),
 		Compressed: compressed,

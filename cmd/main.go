@@ -121,7 +121,7 @@ func main() {
 			{
 				Name:   "update",
 				Usage:  "updating of the value by the key",
-				Action: get,
+				Action: update,
 			},
 		},
 	}
