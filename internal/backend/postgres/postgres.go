@@ -128,10 +128,34 @@ func (m *Postgres) Update(masterKey []byte, secret backend.Secret) error {
 	data.CurrentVersion++
 	data.Data = secret.Data
 	data.UpdatedAt = time.Now().UTC()
-	fmt.Println("UPDATE: ", data)
-	m.db.Model(Mystery{}).Update(&Mystery{
-		Data:       secret.Data,
-		Compressed: secret.Compressed,
-		MaxVersion: data.MaxVersion + 1,
-	}).Error
+	err = m.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(Mystery{}).Update(&Mystery{
+			Data:       secret.Data,
+			Compressed: secret.Compressed,
+			MaxVersion: data.MaxVersion + 1,
+		}).Error; err != nil {
+			return fmt.Errorf("unable to update old value: %v", err)
+		}
+
+		encryptedValue, err := crypto.EncryptAES(masterKey, secret.Data)
+		if err != nil {
+			return fmt.Errorf("put: unable to encrypt data: %v", err)
+		}
+		if err := m.db.Create(&Mystery{
+			Namespace:      string(secret.Namespace),
+			Data:           encryptedValue,
+			CreatedAt:      time.Now().UTC(),
+			ExpiredAfter:   secret.ExpiredAfter,
+			CurrentVersion: data.MaxVersion + 1,
+			MaxVersion:     data.MaxVersion + 1,
+			Compressed:     secret.Compressed,
+		}).Error; err != nil {
+			return fmt.Errorf("unable to create new record: %v", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
