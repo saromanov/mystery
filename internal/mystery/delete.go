@@ -29,14 +29,14 @@ func (p DeleteRequest) validate() error {
 }
 
 // Delete provides getting value by the key
-func Delete(p DeleteRequest) (Data, error) {
+func Delete(p DeleteRequest) error {
 	if err := p.validate(); err != nil {
-		return "", fmt.Errorf("delete: unable to validate data: %v", err)
+		return fmt.Errorf("delete: unable to validate data: %v", err)
 	}
 	err := p.Backend.Delete([]byte(p.MasterPass), []byte(p.Namespace))
 	if err != nil {
-		return "", fmt.Errorf("delete: unable to get data: %v", err)
+		return fmt.Errorf("delete: unable to get data: %v", err)
 	}
 
-	return Decode(data)
+	return nil
 }
