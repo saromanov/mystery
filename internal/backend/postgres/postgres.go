@@ -60,6 +60,14 @@ func (m *Postgres) Get(masterKey, namespace []byte) (backend.Secret, error) {
 	}, nil
 }
 
+// Delete defines deleting secret from backend
+func (m *Postgres) Delete(masterKey, namespace []byte) error {
+	if err := m.db.Delete(&Mystery{Namespace: string(namespace)}).Error; err != nil {
+		return fmt.Errorf("unable to delete secret: %v", err)
+	}
+	return nil
+}
+
 // get data by the key
 func (m *Postgres) get(key []byte) (Mystery, error) {
 	var r Mystery
@@ -107,7 +115,7 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 	if err != nil {
 		return fmt.Errorf("put: unable to encrypt data: %v", err)
 	}
-	m.db.Create(&Mystery{
+	err = m.db.Create(&Mystery{
 		Namespace:      string(secret.Namespace),
 		Data:           encryptedValue,
 		CreatedAt:      time.Now().UTC(),
@@ -115,7 +123,10 @@ func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
 		CurrentVersion: 1,
 		MaxVersion:     1,
 		Compressed:     secret.Compressed,
-	})
+	}).Error
+	if err != nil {
+		return fmt.Errorf("unable to create data: %v", err)
+	}
 	return nil
 }
 

@@ -97,6 +97,27 @@ func update(c *cli.Context) error {
 	return nil
 }
 
+func delete(c *cli.Context) error {
+	conf, err := loadConfig("config.yml")
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to load config")
+	}
+	key := c.Args().Get(0)
+	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
+	pg, err := postgres.New(conf)
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to init backend")
+	}
+	if err = mystery.Delete(mystery.DeleteRequest{
+		MasterPass: masterPass,
+		Namespace:  key,
+		Backend:    pg,
+	}); err != nil {
+		logrus.WithError(err).Fatalf("unable to delete data")
+	}
+	return nil
+}
+
 // loadConfig provides loading of configuration
 func loadConfig(path string) (*config.Config, error) {
 	return config.Load(path)
@@ -122,6 +143,11 @@ func main() {
 				Name:   "update",
 				Usage:  "updating of the value by the key",
 				Action: update,
+			},
+			{
+				Name:   "delete",
+				Usage:  "delete value by the key",
+				Action: get,
 			},
 		},
 	}
