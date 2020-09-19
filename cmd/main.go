@@ -49,13 +49,13 @@ func putInner(c *cli.Context) error {
 func get(c *cli.Context) error {
 	conf, err := loadConfig("config.yml")
 	if err != nil {
-		logrus.WithError(err).Fatalf("unable to load config")
+		log.WithError(err).Fatalf("unable to load config")
 	}
 	key := c.Args().Get(0)
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {
-		logrus.WithError(err).Fatalf("unable to init backend")
+		log.WithError(err).Fatalf("unable to init backend")
 	}
 	value, err := mystery.Get(mystery.GetRequest{
 		MasterPass: masterPass,
@@ -63,7 +63,7 @@ func get(c *cli.Context) error {
 		Backend:    pg,
 	})
 	if err != nil {
-		logrus.WithError(err).Fatalf("unable to get data")
+		log.WithError(err).Fatalf("unable to get data")
 	}
 
 	fmt.Println(value)
@@ -103,6 +103,9 @@ func delete(c *cli.Context) error {
 		logrus.WithError(err).Fatalf("unable to load config")
 	}
 	key := c.Args().Get(0)
+	if key == "" {
+		logrus.WithError(err).Fatalf("key is not defined")
+	}
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {
@@ -115,6 +118,8 @@ func delete(c *cli.Context) error {
 	}); err != nil {
 		logrus.WithError(err).Fatalf("unable to delete data")
 	}
+
+	log.Infof("data %s was deleted", key)
 	return nil
 }
 
@@ -147,7 +152,7 @@ func main() {
 			{
 				Name:   "delete",
 				Usage:  "delete value by the key",
-				Action: get,
+				Action: delete,
 			},
 		},
 	}
