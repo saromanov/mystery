@@ -123,6 +123,10 @@ func delete(c *cli.Context) error {
 	return nil
 }
 
+func list(c *cli.Context) {
+
+}
+
 // loadConfig provides loading of configuration
 func loadConfig(path string) (*config.Config, error) {
 	return config.Load(path)
@@ -152,6 +156,11 @@ func main() {
 			{
 				Name:   "delete",
 				Usage:  "delete value by the key",
+				Action: delete,
+			},
+			{
+				Name:   "list",
+				Usage:  "showing list of secrets",
 				Action: delete,
 			},
 		},

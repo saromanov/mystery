@@ -23,3 +23,10 @@ type Secret struct {
 	ExpiredAfter *time.Duration
 	Compressed   bool
 }
+
+// DeleteSecret defines request for delete secret
+type DeleteSecret struct {
+	Namespace []byte
+	Version   int
+	Force     bool
+}
