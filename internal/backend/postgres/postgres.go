@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -62,7 +63,10 @@ func (m *Postgres) Get(masterKey, namespace []byte) (backend.Secret, error) {
 
 // Delete defines deleting secret from backend
 func (m *Postgres) Delete(masterKey, namespace []byte) error {
-	if err := m.db.Delete(&Mystery{Namespace: string(namespace)}).Error; err != nil {
+	if len(namespace) == 0 {
+		return errors.New("delete: namespace is not defined")
+	}
+	if err := m.db.Where("namespace = ?", string(namespace)).Delete(&Mystery{}).Error; err != nil {
 		return fmt.Errorf("unable to delete secret: %v", err)
 	}
 	return nil
