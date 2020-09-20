@@ -62,21 +62,29 @@ func (m *Postgres) Get(masterKey, namespace []byte) (backend.Secret, error) {
 }
 
 // List defines getting list of secrets
-func (m *Postgres) List(masterKey []byte) ([]Mystery, error) {
+func (m *Postgres) List(masterKey []byte) ([]backend.MysteryResp, error) {
 	var mys []Mystery
 	if err := m.db.Find(&mys).Error; err != nil {
 		return nil, fmt.Errorf("unable to find secrets: %v", err)
 	}
-	resp := []Mystery{}
+	resp := []backend.MysteryResp{}
 	for _, m := range mys {
+		r := backend.MysteryResp{
+			Namespace:      m.Namespace,
+			Data:           m.Data,
+			MaxVersion:     m.MaxVersion,
+			CurrentVersion: m.CurrentVersion,
+			UserID:         m.UserID,
+			CreatedAt:      m.CreatedAt,
+		}
 		if m.Compressed {
 			decrypted, err := crypto.DecryptAES(masterKey, m.Data)
 			if err != nil {
 				continue
 			}
-			m.Data = decrypted
+			r.Data = decrypted
 		}
-		resp = append(resp, m)
+		resp = append(resp, r)
 	}
 	return resp, nil
 }

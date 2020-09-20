@@ -33,8 +33,10 @@ type DeleteSecret struct {
 }
 
 type MysteryResp struct {
-	Namespace    []byte
-	Data         []byte
-	ExpiredAfter *time.Duration
-	Compressed   bool
+	Namespace      string
+	Data           []byte
+	UserID         string
+	CreatedAt      time.Time
+	CurrentVersion uint64
+	MaxVersion     uint64
 }
