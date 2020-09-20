@@ -8,6 +8,7 @@ type Backend interface {
 	Put(masterKey []byte, secret Secret) error
 	Update(masterKey []byte, secret Secret) error
 	Delete(masterKey, key []byte) error
+	List(masterKey []byte) ([]MysteryResp, error)
 }
 
 // MasterPassBackend defines backend for master pass
@@ -29,4 +30,11 @@ type DeleteSecret struct {
 	Namespace []byte
 	Version   int
 	Force     bool
+}
+
+type MysteryResp struct {
+	Namespace    []byte
+	Data         []byte
+	ExpiredAfter *time.Duration
+	Compressed   bool
 }
