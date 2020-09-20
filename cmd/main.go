@@ -123,8 +123,28 @@ func delete(c *cli.Context) error {
 	return nil
 }
 
-func list(c *cli.Context) {
+func list(c *cli.Context) error {
+	conf, err := loadConfig("config.yml")
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to load config")
+	}
+	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
+	pg, err := postgres.New(conf)
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to init backend")
+	}
+	rsp, err := mystery.List(mystery.ListRequest{
+		MasterPass: masterPass,
+		Backend:    pg,
+	})
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to list data")
+	}
 
+	for _, r := range rsp {
+		fmt.Println("KEY: ", r.Namespace)
+	}
+	return nil
 }
 
 // loadConfig provides loading of configuration
@@ -161,7 +181,7 @@ func main() {
 			{
 				Name:   "list",
 				Usage:  "showing list of secrets",
-				Action: delete,
+				Action: list,
 			},
 		},
 	}

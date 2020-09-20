@@ -2,6 +2,7 @@ package mystery
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/saromanov/mystery/internal/backend"
 )
@@ -13,14 +14,31 @@ type ListRequest struct {
 }
 
 // ListResponse defines struct for getting response
-type ListResponse struct {
+type ListItemResponse struct {
+	Namespace      string
+	Data           []byte
+	UserID         string
+	CreatedAt      time.Time
+	CurrentVersion uint64
+	MaxVersion     uint64
 }
 
 // List returns list of secrets
-func List(p ListRequest) (ListResponse, error) {
-	_, err := p.Backend.List([]byte(p.MasterPass))
+func List(p ListRequest) ([]ListItemResponse, error) {
+	rsp, err := p.Backend.List([]byte(p.MasterPass))
 	if err != nil {
-		return ListResponse{}, fmt.Errorf("list: unable to get data: %v", err)
+		return nil, fmt.Errorf("list: unable to get data: %v", err)
 	}
-	return ListResponse{}, nil
+	data := make([]ListItemResponse, len(rsp))
+	for i, r := range rsp {
+		data[i] = ListItemResponse{
+			Namespace:      r.Namespace,
+			Data:           r.Data,
+			MaxVersion:     r.MaxVersion,
+			CurrentVersion: r.CurrentVersion,
+			UserID:         r.UserID,
+			CreatedAt:      r.CreatedAt,
+		}
+	}
+	return data, nil
 }
