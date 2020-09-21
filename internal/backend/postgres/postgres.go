@@ -64,7 +64,7 @@ func (m *Postgres) Get(masterKey, namespace []byte) (backend.Secret, error) {
 // List defines getting list of secrets
 func (m *Postgres) List(masterKey []byte) ([]backend.MysteryResp, error) {
 	var mys []Mystery
-	if err := m.db.Find(&mys).Error; err != nil {
+	if err := m.db.Model(Mystery{}).Where("current_version=(select max(current_version) from mysteries)").Find(&mys).Error; err != nil {
 		return nil, fmt.Errorf("unable to find secrets: %v", err)
 	}
 	resp := []backend.MysteryResp{}

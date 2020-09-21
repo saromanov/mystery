@@ -142,7 +142,7 @@ func list(c *cli.Context) error {
 	}
 
 	for _, r := range rsp {
-		fmt.Println("KEY: ", r.Namespace)
+		fmt.Println("KEY: ", r.Namespace, r.CurrentVersion)
 	}
 	return nil
 }
