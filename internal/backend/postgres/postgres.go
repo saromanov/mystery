@@ -135,6 +135,11 @@ func checkExpired(r Mystery) bool {
 
 // Put defines putting a secret to backend
 func (m *Postgres) Put(masterKey []byte, secret backend.Secret) error {
+	var count int
+	err := m.db.Model(&Mystery{}).Where("namespace = ?", string(secret.Namespace)).Count(&count).Error
+	if count > 0 {
+		return fmt.Errorf("namespace %s is already exists", string(secret.Namespace))
+	}
 	encryptedValue, err := crypto.EncryptAES(masterKey, secret.Data)
 	if err != nil {
 		return fmt.Errorf("put: unable to encrypt data: %v", err)
