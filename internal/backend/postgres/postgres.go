@@ -71,18 +71,10 @@ func (m *Postgres) List(masterKey []byte) ([]backend.MysteryResp, error) {
 	for _, m := range mys {
 		r := backend.MysteryResp{
 			Namespace:      m.Namespace,
-			Data:           m.Data,
 			MaxVersion:     m.MaxVersion,
 			CurrentVersion: m.CurrentVersion,
 			UserID:         m.UserID,
 			CreatedAt:      m.CreatedAt,
-		}
-		if m.Compressed {
-			decrypted, err := crypto.DecryptAES(masterKey, m.Data)
-			if err != nil {
-				continue
-			}
-			r.Data = decrypted
 		}
 		resp = append(resp, r)
 	}

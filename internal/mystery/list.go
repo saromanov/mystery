@@ -33,7 +33,6 @@ func List(p ListRequest) ([]ListItemResponse, error) {
 	for i, r := range rsp {
 		data[i] = ListItemResponse{
 			Namespace:      r.Namespace,
-			Data:           r.Data,
 			MaxVersion:     r.MaxVersion,
 			CurrentVersion: r.CurrentVersion,
 			UserID:         r.UserID,

@@ -34,7 +34,6 @@ type DeleteSecret struct {
 
 type MysteryResp struct {
 	Namespace      string
-	Data           []byte
 	UserID         string
 	CreatedAt      time.Time
 	CurrentVersion uint64
