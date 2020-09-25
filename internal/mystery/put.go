@@ -73,22 +73,15 @@ func Put(p PutRequest) error {
 
 // readFile provides reading of the json file and convert it to format key=value
 func readFile(name string) (string, error) {
-	jsonFile, err := os.Open(name)
+	data, err := unmarshal(name)
 	if err != nil {
-		return "", fmt.Errorf("unable to open file: %s %v", name, err)
+		return "", fmt.Errorf("unable to unmarshal data: %v", err)
 	}
-	defer jsonFile.Close()
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		return "", fmt.Errorf("unable to open file: %v", err)
+	result := ""
+	for k, v := range data {
+		result += fmt.Sprintf("%s=%s;", k, v.(string))
 	}
-	var result map[string]interface{}
-	if err := json.Unmarshal([]byte(byteValue), &result); err != nil {
-		return "", fmt.Errorf("unable to unmarshal data: ", err)
-	}
-
-	fmt.Println(result["users"])
+	return result, nil
 }
 
 func unmarshal(name string) (map[string]interface{}, error) {
