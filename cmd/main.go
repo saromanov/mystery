@@ -25,7 +25,8 @@ func putInner(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to load config: %v", err)
 	}
-	key := c.Args().Get(0)
+	key := c.Args().Get(1)
+	fmt.Println("KEY: ", key)
 	var data mystery.Data
 	for i := 1; i < c.Args().Len(); i++ {
 		data += mystery.Data(c.Args().Get(i) + ";")
