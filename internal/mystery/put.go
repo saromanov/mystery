@@ -49,6 +49,14 @@ func Put(p PutRequest) error {
 		return fmt.Errorf("put: unable to validate data: %v", err)
 	}
 
+	if p.Type == "file" {
+		data, err := readFile(string(p.Data))
+		if err != nil {
+			return fmt.Errorf("unable to read file: %v", err)
+		}
+		p.Data = Data(data)
+	}
+
 	value, err := p.Data.encode()
 	if err != nil {
 		return fmt.Errorf("unable to encode value: %v", err)
