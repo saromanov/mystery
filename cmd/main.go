@@ -31,7 +31,7 @@ func putInner(c *cli.Context) error {
 	for i := 1; i < c.Args().Len(); i++ {
 		data += mystery.Data(c.Args().Get(i) + ";")
 	}*/
-	data, storeType := prepareData(c)
+	data, storeType := prepareData(c.Args())
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {
@@ -51,12 +51,12 @@ func putInner(c *cli.Context) error {
 
 func prepareData(c cli.Args) (mystery.Data, string) {
 	var data mystery.Data
-	first := c.Args().Get(1)
+	first := c.Get(1)
 	if strings.HasPrefix(first, "@") {
-		return mystery.Data(), "file"
+		return mystery.Data(""), "file"
 	}
-	for i := 1; i < c.Args().Len(); i++ {
-		data += mystery.Data(c.Args().Get(i) + ";")
+	for i := 1; i < c.Len(); i++ {
+		data += mystery.Data(c.Get(i) + ";")
 	}
 	return data, "store"
 }
