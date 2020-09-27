@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/saromanov/mystery/config"
 	"github.com/saromanov/mystery/internal/backend/postgres"
@@ -25,12 +26,12 @@ func putInner(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to load config: %v", err)
 	}
-	key := c.Args().Get(1)
-	fmt.Println("KEY: ", key)
-	var data mystery.Data
+	key := c.Args().Get(0)
+	/*var data mystery.Data
 	for i := 1; i < c.Args().Len(); i++ {
 		data += mystery.Data(c.Args().Get(i) + ";")
-	}
+	}*/
+	data, storeType := prepareData(c)
 	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
 	pg, err := postgres.New(conf)
 	if err != nil {
@@ -41,10 +42,23 @@ func putInner(c *cli.Context) error {
 		Namespace:  key,
 		Data:       data,
 		Backend:    pg,
+		Type:       storeType,
 	}); err != nil {
 		return fmt.Errorf("unable to store data: %v", err)
 	}
 	return nil
+}
+
+func prepareData(c cli.Args) (mystery.Data, string) {
+	var data mystery.Data
+	first := c.Args().Get(1)
+	if strings.HasPrefix(first, "@") {
+		return mystery.Data(), "file"
+	}
+	for i := 1; i < c.Args().Len(); i++ {
+		data += mystery.Data(c.Args().Get(i) + ";")
+	}
+	return data, "store"
 }
 
 func get(c *cli.Context) error {
