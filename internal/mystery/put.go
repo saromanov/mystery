@@ -34,7 +34,7 @@ func (p PutRequest) validate() error {
 	if p.Namespace == "" {
 		return errNoNamespace
 	}
-	if len(p.Data) == 0 {
+	if len(p.Data) == 0 && p.Type != "file" {
 		return errNoValue
 	}
 	if p.Backend == nil {
@@ -50,6 +50,7 @@ func Put(p PutRequest) error {
 	}
 
 	if p.Type == "file" {
+		fmt.Println("DATA:")
 		data, err := readFile(string(p.Data))
 		if err != nil {
 			return fmt.Errorf("unable to read file: %v", err)
