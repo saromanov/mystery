@@ -50,7 +50,7 @@ func Put(p PutRequest) error {
 	}
 
 	if p.Type == "file" {
-		fmt.Println("DATA:")
+		fmt.Println("DATA: ", string(p.Data))
 		data, err := readFile(string(p.Data))
 		if err != nil {
 			return fmt.Errorf("unable to read file: %v", err)
