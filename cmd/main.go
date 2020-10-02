@@ -53,12 +53,16 @@ func prepareData(c cli.Args) (mystery.Data, string) {
 	var data mystery.Data
 	first := c.Get(1)
 	if strings.HasPrefix(first, "@") {
-		return mystery.Data(first[1:]), "file"
+		return setFileData(first[1:])
 	}
 	for i := 1; i < c.Len(); i++ {
 		data += mystery.Data(c.Get(i) + ";")
 	}
 	return data, "store"
+}
+
+func setFileData(data string) (mystery.Data, string) {
+	return mystery.Data(data), "file"
 }
 
 func get(c *cli.Context) error {
