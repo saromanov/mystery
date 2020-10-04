@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/saromanov/mystery/api"
 	"github.com/saromanov/mystery/config"
 	"github.com/saromanov/mystery/internal/backend/postgres"
 	"github.com/saromanov/mystery/internal/mystery"
@@ -177,6 +178,14 @@ func loadConfig(path string) (*config.Config, error) {
 	return config.Load(path)
 }
 
+func server(c *cli.Context) error {
+	m := mystery.New()
+	if err := api.Make(nil, m); err != nil {
+		log.WithError(err).Fatalf("unable to execute put command")
+	}
+	return nil
+}
+
 func main() {
 	app := &cli.App{
 		Name:  "mystery",
@@ -206,6 +215,11 @@ func main() {
 			{
 				Name:   "list",
 				Usage:  "showing list of secrets",
+				Action: list,
+			},
+			{
+				Name:   "server",
+				Usage:  "starting of the server",
 				Action: list,
 			},
 		},
