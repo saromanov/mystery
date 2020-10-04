@@ -29,7 +29,7 @@ func (p DeleteRequest) validate() error {
 }
 
 // Delete provides getting value by the key
-func Delete(p DeleteRequest) error {
+func (m *Mystery) Delete(p DeleteRequest) error {
 	if err := p.validate(); err != nil {
 		return fmt.Errorf("delete: unable to validate data: %v", err)
 	}

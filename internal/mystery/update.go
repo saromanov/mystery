@@ -29,7 +29,7 @@ func (p UpdateRequest) validate() error {
 }
 
 // Update provides updating value by the key
-func Update(p UpdateRequest) error {
+func (m *Mystery) Update(p UpdateRequest) error {
 	if err := p.validate(); err != nil {
 		return fmt.Errorf("update: unable to validate data: %v", err)
 	}

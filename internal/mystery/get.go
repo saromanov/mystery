@@ -29,7 +29,7 @@ func (p GetRequest) validate() error {
 }
 
 // Get provides getting value by the key
-func Get(p GetRequest) (Data, error) {
+func (m *Mystery) Get(p GetRequest) (Data, error) {
 	if err := p.validate(); err != nil {
 		return "", fmt.Errorf("get: unable to validate data: %v", err)
 	}
@@ -41,7 +41,7 @@ func Get(p GetRequest) (Data, error) {
 	if rsp.Compressed {
 		data, err = decompress(rsp.Data)
 		if err != nil {
-			return "", fmt.Errorf("unable to decompress: %v", err)
+			return "", fmt.Errorf("get: unable to decompress: %v", err)
 		}
 	}
 	return Decode(data)

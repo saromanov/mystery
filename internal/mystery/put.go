@@ -44,7 +44,7 @@ func (p PutRequest) validate() error {
 }
 
 // Put provides adding key-value pair to backend
-func Put(p PutRequest) error {
+func (m *Mystery) Put(p PutRequest) error {
 	if err := p.validate(); err != nil {
 		return fmt.Errorf("put: unable to validate data: %v", err)
 	}

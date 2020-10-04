@@ -37,7 +37,8 @@ func putInner(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to init backend: %v", err)
 	}
-	if err := mystery.Put(mystery.PutRequest{
+	m := mystery.New()
+	if err := m.Put(mystery.PutRequest{
 		MasterPass: masterPass,
 		Namespace:  key,
 		Data:       data,
@@ -76,7 +77,9 @@ func get(c *cli.Context) error {
 	if err != nil {
 		log.WithError(err).Fatalf("unable to init backend")
 	}
-	value, err := mystery.Get(mystery.GetRequest{
+
+	m := mystery.New()
+	value, err := m.Get(mystery.GetRequest{
 		MasterPass: masterPass,
 		Namespace:  key,
 		Backend:    pg,
@@ -105,7 +108,8 @@ func update(c *cli.Context) error {
 	for i := 1; i < c.Args().Len(); i++ {
 		data += mystery.Data(c.Args().Get(i) + ";")
 	}
-	if err = mystery.Update(mystery.UpdateRequest{
+	m := mystery.New()
+	if err = m.Update(mystery.UpdateRequest{
 		MasterPass: masterPass,
 		Namespace:  key,
 		Data:       data,
@@ -130,7 +134,8 @@ func delete(c *cli.Context) error {
 	if err != nil {
 		logrus.WithError(err).Fatalf("unable to init backend")
 	}
-	if err = mystery.Delete(mystery.DeleteRequest{
+	m := mystery.New()
+	if err = m.Delete(mystery.DeleteRequest{
 		MasterPass: masterPass,
 		Namespace:  key,
 		Backend:    pg,
@@ -152,7 +157,8 @@ func list(c *cli.Context) error {
 	if err != nil {
 		logrus.WithError(err).Fatalf("unable to init backend")
 	}
-	rsp, err := mystery.List(mystery.ListRequest{
+	m := mystery.New()
+	rsp, err := m.List(mystery.ListRequest{
 		MasterPass: masterPass,
 		Backend:    pg,
 	})

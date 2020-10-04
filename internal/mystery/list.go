@@ -24,7 +24,7 @@ type ListItemResponse struct {
 }
 
 // List returns list of secrets
-func List(p ListRequest) ([]ListItemResponse, error) {
+func (m *Mystery) List(p ListRequest) ([]ListItemResponse, error) {
 	rsp, err := p.Backend.List([]byte(p.MasterPass))
 	if err != nil {
 		return nil, fmt.Errorf("list: unable to get data: %v", err)
