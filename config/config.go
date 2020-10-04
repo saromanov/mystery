@@ -8,6 +8,7 @@ import (
 
 // Config defines configuration for mystery
 type Config struct {
+	Server  Server  `yaml:"server"`
 	Backend Backend `yaml:"backend"`
 	// Environment variable for master pass
 	MasterPassEnv string `yaml:"masterPassEnv"`
@@ -21,6 +22,11 @@ type Backend struct {
 	User     string `yaml:"user"`
 	DB       string `yaml:"db"`
 	Password string `yaml:"password"`
+}
+
+// Server defines configuration for server
+type Server struct {
+	Address string `yaml:"address"`
 }
 
 // Load provides loading of the config
