@@ -179,11 +179,19 @@ func loadConfig(path string) (*config.Config, error) {
 }
 
 func server(c *cli.Context) error {
+	l := makeLogger()
 	m := mystery.New()
-	if err := api.Make(nil, m); err != nil {
-		log.WithError(err).Fatalf("unable to execute put command")
+	if err := api.Make(nil, l, m); err != nil {
+		l.WithError(err).Fatalf("unable to execute put command")
 	}
 	return nil
+}
+
+func makeLogger() *log.Logger {
+	l := log.New()
+	l.SetLevel(log.InfoLevel)
+	l.SetFormatter(&log.JSONFormatter{})
+	return l
 }
 
 func main() {
@@ -220,7 +228,7 @@ func main() {
 			{
 				Name:   "server",
 				Usage:  "starting of the server",
-				Action: list,
+				Action: server,
 			},
 		},
 	}
