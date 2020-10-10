@@ -34,8 +34,16 @@ func Load(path string) (*Config, error) {
 
 	c := &Config{}
 	if err := cowrow.LoadByPath(path, &c); err != nil {
-		return nil, fmt.Errorf("unable to load config: %v", err)
+		return makeDefault(), fmt.Errorf("unable to load config: %v", err)
 	}
 
 	return c, nil
+}
+
+func makeDefault() *Config {
+	return &Config{
+		Server: Server{
+			Address: ":8085",
+		},
+	}
 }

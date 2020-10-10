@@ -13,6 +13,9 @@ import (
 
 // Make provides starting of the server
 func Make(c *config.Server, l *log.Logger, mys *mystery.Mystery) error {
+	if c == nil {
+		return fmt.Errorf("config is not defined")
+	}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	a := API{}

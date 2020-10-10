@@ -181,7 +181,11 @@ func loadConfig(path string) (*config.Config, error) {
 func server(c *cli.Context) error {
 	l := makeLogger()
 	m := mystery.New()
-	if err := api.Make(nil, l, m); err != nil {
+	conf, err := config.Load("")
+	if err != nil {
+		l.WithError(err).Errorf("config wasn't loaded. Using default one")
+	}
+	if err := api.Make(&conf.Server, l, m); err != nil {
 		l.WithError(err).Fatalf("unable to execute put command")
 	}
 	return nil
