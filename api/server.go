@@ -18,7 +18,7 @@ func Make(c *config.Server, l *log.Logger, mys *mystery.Mystery) error {
 	}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	a := API{}
+	a := New(mys)
 	r.Get("/", a.Put)
 	l.Infof("starting of server at address %s...", c.Address)
 	if err := http.ListenAndServe(c.Address, r); err != nil {
