@@ -27,6 +27,8 @@ type Backend struct {
 // Server defines configuration for server
 type Server struct {
 	Address string `yaml:"address"`
+	Key     string `yaml:"key"`
+	Crt     string `yaml:"crt"`
 }
 
 // Load provides loading of the config
