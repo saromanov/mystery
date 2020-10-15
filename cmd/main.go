@@ -181,7 +181,7 @@ func loadConfig(path string) (*config.Config, error) {
 func server(c *cli.Context) error {
 	l := makeLogger()
 	m := mystery.New()
-	conf, err := config.Load("")
+	conf, err := config.Load(c.String("config"))
 	if err != nil {
 		l.WithError(err).Errorf("config wasn't loaded. Using default one")
 	}
@@ -202,7 +202,13 @@ func main() {
 	app := &cli.App{
 		Name:  "mystery",
 		Usage: "Starting of the app",
-		Flags: []cli.Flag{},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "config",
+				Value: "",
+				Usage: "path to config",
+			},
+		},
 		Commands: []*cli.Command{
 			{
 				Name:   "put",
