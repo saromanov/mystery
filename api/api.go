@@ -26,9 +26,12 @@ func (a *API) Put(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Get provides getting of
+// Get provides getting of getting data
 func (a *API) Get(w http.ResponseWriter, r *http.Request) {
-	lst, err := a.core.Get(mystery.GetRequest{})
+	namespace := r.URL.Query().Get("namespace")
+	lst, err := a.core.Get(mystery.GetRequest{
+		Namespace: namespace,
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
