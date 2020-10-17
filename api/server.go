@@ -19,7 +19,8 @@ func Make(c *config.Server, l *log.Logger, mys *mystery.Mystery) error {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	a := New(mys)
-	r.Get("/put", a.Put)
+	r.Post("/v1/put", a.Put)
+	r.Get("/v1/get", a.Get)
 	l.Infof("starting of server at address %s...", c.Address)
 	if err := startServer(c, r); err != nil {
 		return fmt.Errorf("unable to init server: %v", err)
