@@ -181,10 +181,12 @@ func loadConfig(path string) (*config.Config, error) {
 func server(c *cli.Context) error {
 	l := makeLogger()
 	m := mystery.New()
+	dev := c.Bool("dev")
 	conf, err := config.Load(c.String("config"))
 	if err != nil {
 		l.WithError(err).Errorf("config wasn't loaded. Using default one")
 	}
+	conf.Server.Dev = dev
 	if err := api.Make(&conf.Server, l, m); err != nil {
 		l.WithError(err).Fatalf("unable to execute put command")
 	}
@@ -207,6 +209,11 @@ func main() {
 				Name:  "config",
 				Value: "",
 				Usage: "path to config",
+			},
+			&cli.BoolFlag{
+				Name:  "dev",
+				Value: false,
+				Usage: "starting of the dev server",
 			},
 		},
 		Commands: []*cli.Command{

@@ -29,6 +29,7 @@ type Server struct {
 	Address string `yaml:"address"`
 	Key     string `yaml:"key"`
 	Crt     string `yaml:"crt"`
+	Dev     bool   `yaml:"dev"`
 }
 
 // Load provides loading of the config

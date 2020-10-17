@@ -21,7 +21,11 @@ func Make(c *config.Server, l *log.Logger, mys *mystery.Mystery) error {
 	a := New(mys)
 	r.Post("/v1/put", a.Put)
 	r.Get("/v1/get", a.Get)
-	l.Infof("starting of server at address %s...", c.Address)
+	fields := log.Fields{}
+	if c.Dev {
+		fields["token"] = generateToken()
+	}
+	l.WithFields(fields).Infof("starting of server at address %s...", c.Address)
 	if err := startServer(c, r); err != nil {
 		return fmt.Errorf("unable to init server: %v", err)
 	}
@@ -37,6 +41,11 @@ func startServer(c *config.Server, h http.Handler) error {
 		return fmt.Errorf("unable to init server: %v", err)
 	}
 	return nil
+}
+
+// TODO make token generation for dev server
+func generateToken() string {
+	return "12345678912345678912345678912345"
 }
 
 func startTLSServer(c *config.Server, h http.Handler) error {
