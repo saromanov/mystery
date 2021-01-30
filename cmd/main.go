@@ -182,12 +182,27 @@ func server(c *cli.Context) error {
 	l := makeLogger()
 	m := mystery.New()
 	dev := c.Bool("dev")
-	conf, err := config.Load(c.String("config"))
+	address := c.String("address")
+	cfg := c.String("config")
+	if cfg == "" {
+		cfg = "config.yml"
+	}
+	conf, err := config.Load(cfg)
 	if err != nil {
 		l.WithError(err).Errorf("config wasn't loaded. Using default one")
 	}
 	conf.Server.Dev = dev
-	if err := api.Make(&conf.Server, l, m); err != nil {
+	if address != "" {
+		conf.Server.Address = address
+	}
+
+	masterPass := os.Getenv("MYSTERY_MASTER_PASS")
+	pg, err := postgres.New(conf)
+	if err != nil {
+		logrus.WithError(err).Fatalf("unable to init backend")
+	}
+
+	if err := api.Make(&conf.Server, l, m, masterPass, pg); err != nil {
 		l.WithError(err).Fatalf("unable to execute put command")
 	}
 	return nil
@@ -214,6 +229,11 @@ func main() {
 				Name:  "dev",
 				Value: false,
 				Usage: "starting of the dev server",
+			},
+			&cli.StringFlag{
+				Name:  "address",
+				Value: "",
+				Usage: "address of the server",
 			},
 		},
 		Commands: []*cli.Command{

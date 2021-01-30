@@ -8,11 +8,12 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/saromanov/mystery/config"
 	"github.com/saromanov/mystery/internal/mystery"
+	"github.com/saromanov/mystery/internal/backend"
 	log "github.com/sirupsen/logrus"
 )
 
 // Make provides starting of the server
-func Make(c *config.Server, l *log.Logger, mys *mystery.Mystery) error {
+func Make(c *config.Server, l *log.Logger, mys *mystery.Mystery, masterPass string, backend backend.Backend) error {
 	if c == nil {
 		return fmt.Errorf("config is not defined")
 	}

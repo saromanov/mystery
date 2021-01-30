@@ -1,6 +1,7 @@
 package mystery
 
 import (
+	"strings"
 	"bytes"
 	"compress/zlib"
 	"encoding/gob"
@@ -55,4 +56,18 @@ func Decode(data []byte) (Data, error) {
 		return out, fmt.Errorf("unable to decode value: %v", err)
 	}
 	return out, nil
+}
+
+// Prepare provides preparing of the data
+func Prepare(req string) (Data, string) {
+	var data Data
+	values := strings.Split(req, " ")
+	for i := 1; i < len(values); i++ {
+		data += Data(values[i] + ";")
+	}
+	return data, "store"
+}
+
+func setFileData(data string) (Data, string) {
+	return Data(data), "file"
 }
